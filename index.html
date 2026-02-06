@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Trip - Currency</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #bc002d; /* Rojo bandera Japón */
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-bg: #ffffff;
+            --text-color: #2d3436;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 420px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        header {
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: #636e72;
+            margin-top: 5px;
+        }
+
+        .input-wrapper {
+            background: #f1f2f6;
+            border-radius: 15px;
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary-color);
+            background: #fff;
+            box-shadow: 0 5px 15px rgba(188, 0, 45, 0.05);
+        }
+
+        .label-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+
+        .flag-icon {
+            font-size: 1.4rem;
+            margin-right: 10px;
+        }
+
+        .currency-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #636e72;
+        }
+
+        input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-color);
+            outline: none;
+            padding: 5px 0;
+        }
+
+        /* Quitar flechitas de los inputs de número */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .rates-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #b2bec3;
+            line-height: 1.6;
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            background-color: #00b894;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* Animación simple al cargar */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .container { animation: fadeIn 0.6s ease-out; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>JAPAN TRAVEL</h1>
+        <p>Conversor de Moneda en Tiempo Real</p>
+    </header>
+
+    <div class="input-wrapper">
+        <div class="label-row">
+            <span class="flag-icon">🇯🇵</span>
+            <span class="currency-name">Yenes (JPY)</span>
+        </div>
+        <input type="number" id="jpyInput" placeholder="0" oninput="convert('JPY')">
+    </div>
+
+    <div class="input-wrapper">
+        <div class="label-row">
+            <span class="flag-icon">🇺🇸</span>
+            <span class="currency-name">Dólares (USD)</span>
+        </div>
+        <input type="number" id="usdInput" placeholder="0" oninput="convert('USD')">
+    </div>
+
+    <div class="input-wrapper">
+        <div class="label-row">
+            <span class="flag-icon">🇺🇾</span>
+            <span class="currency-name">Pesos Uruguayos (UYU)</span>
+        </div>
+        <input type="number" id="uyuInput" placeholder="0" oninput="convert('UYU')">
+    </div>
+
+    <div class="rates-info" id="rateInfo">
+        <span class="status-dot"></span> Obteniendo tasas de cambio...
+    </div>
+</div>
+
+<script>
+    // RECUERDA: Coloca tu API KEY de https://www.exchangerate-api.com/ aquí
+    const API_KEY = '838b6922d1053b32a8247428'; 
+    const URL = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`;
+
+    let rates = { JPY: 0, UYU: 0 };
+
+    async function getRates() {
+        try {
+            const response = await fetch(URL);
+            const data = await response.json();
+            if(data.result === "success") {
+                rates.JPY = data.conversion_rates.JPY;
+                rates.UYU = data.conversion_rates.UYU;
+                
+                document.getElementById('rateInfo').innerHTML = `
+                    <span class="status-dot"></span> 
+                    1 USD = ${rates.JPY.toFixed(2)} JPY | 1 USD = ${rates.UYU.toFixed(2)} UYU
+                    <br>Actualizado: ${new Date().toLocaleTimeString()}
+                `;
+            }
+        } catch (error) {
+            document.getElementById('rateInfo').innerHTML = "⚠️ Error al conectar. Revisa tu API Key.";
+        }
+    }
+
+    function convert(source) {
+        const jpy = document.getElementById('jpyInput');
+        const usd = document.getElementById('usdInput');
+        const uyu = document.getElementById('uyuInput');
+
+        if (!rates.JPY || !rates.UYU) return;
+
+        if (source === 'JPY') {
+            const valInUsd = jpy.value / rates.JPY;
+            usd.value = valInUsd ? valInUsd.toFixed(2) : "";
+            uyu.value = valInUsd ? (valInUsd * rates.UYU).toFixed(2) : "";
+        } 
+        else if (source === 'USD') {
+            jpy.value = usd.value ? (usd.value * rates.JPY).toFixed(0) : "";
+            uyu.value = usd.value ? (usd.value * rates.UYU).toFixed(2) : "";
+        } 
+        else if (source === 'UYU') {
+            const valInUsd = uyu.value / rates.UYU;
+            usd.value = valInUsd ? valInUsd.toFixed(2) : "";
+            jpy.value = valInUsd ? (valInUsd * rates.JPY).toFixed(0) : "";
+        }
+    }
+
+    getRates();
+</script>
+
+</body>
+</html>
